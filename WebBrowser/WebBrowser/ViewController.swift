@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+import WebKit
 class ViewController: UIViewController {
 
     
@@ -15,6 +15,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .zircon
         configureNavBar()
+        setUpViews()
     }
     
     
@@ -27,26 +28,37 @@ class ViewController: UIViewController {
     }()
     
     
+    fileprivate lazy var webView: WKWebView = {
+        let webview = WKWebView()
+        return webview
+    }()
     
-    //MARK: - Handlers
+    
+    //MARK: - Methods
     fileprivate func setUpViews() {
+        view.addSubview(webView)
+        webView.frame = view.bounds
+
+        //"https://samisays11.github.io/"
         
+        guard let url = URL(string: "http://www.google.com") else {return}
+        webView.load(URLRequest(url: url))
     }
     
     
     fileprivate func configureNavBar() {
         navigationItem.titleView = searchBar
-        changeNavBarBackgroundColor()
+        configureNavBarAppearance()
+        configureToolBarAppearance()
         setUpBottomToolbar()
-
     }
     
     
     fileprivate func setUpBottomToolbar() {
-        let forward = UIBarButtonItem(barButtonSystemItem: .fastForward, target: self, action: nil)
-        let backward = UIBarButtonItem(barButtonSystemItem: .rewind, target: self, action: nil)
-        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: nil)
-        let close = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: nil)
+        let forward = UIBarButtonItem(barButtonSystemItem: .fastForward, target: self, action: #selector(didTapGoForward))
+        let backward = UIBarButtonItem(barButtonSystemItem: .rewind, target: self, action: #selector(didTapGoBackward))
+        let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(didTapRefresh))
+        let close = UIBarButtonItem(barButtonSystemItem: .stop, target: self, action: #selector(didTapStopLoading))
 
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
         toolbarItems = [backward, forward, spacer, refresh, close]
@@ -54,9 +66,9 @@ class ViewController: UIViewController {
     }
     
     
-    fileprivate func changeNavBarBackgroundColor() {
+    fileprivate func configureNavBarAppearance() {
         navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = "WebBrowser"
+        navigationItem.title = "🌎 WebBrowser"
 
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .white
@@ -68,19 +80,46 @@ class ViewController: UIViewController {
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         
-        
+    }
+
+    
+    fileprivate func configureToolBarAppearance() {
         let toolBarAppearance = UIToolbarAppearance()
         toolBarAppearance.backgroundColor = .white
         navigationController?.toolbar.tintColor = .black
         navigationController?.toolbar.standardAppearance = toolBarAppearance
         navigationController?.toolbar.compactAppearance = toolBarAppearance
         navigationController?.toolbar.scrollEdgeAppearance = toolBarAppearance
-
-        
     }
-
+    
 }
 
+
+
+//MARK: - Actions
+extension ViewController {
+    
+    @objc fileprivate func didTapGoForward() {
+        guard webView.canGoForward else {return}
+        webView.goForward()
+    }
+    
+    @objc fileprivate func didTapGoBackward() {
+        guard webView.canGoBack else {return}
+        webView.goBack()
+    }
+    
+    
+    @objc fileprivate func didTapRefresh() {
+        webView.reload()
+    }
+    
+    
+    @objc fileprivate func didTapStopLoading() {
+        webView.stopLoading()
+    }
+    
+}
 
 
 extension UIColor {
